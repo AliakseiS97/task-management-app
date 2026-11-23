@@ -1,0 +1,19 @@
+package com.aliakseis.taskmanagement.mapper;
+
+import com.aliakseis.taskmanagement.dto.user.UserRegistrationRequestDto;
+import com.aliakseis.taskmanagement.dto.user.UserResponseDto;
+import com.aliakseis.taskmanagement.model.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+public interface UserMapper {
+    UserResponseDto toDto(User user);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    User toModel(UserRegistrationRequestDto requestDto);
+}
