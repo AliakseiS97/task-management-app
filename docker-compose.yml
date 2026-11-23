@@ -26,6 +26,7 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
 
 volumes:
   mysql-data:
