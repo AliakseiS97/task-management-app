@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: change-users-is-deleted-type
+      author: aliakseis
+      dbms: mysql
+      changes:
+        - sql:
+            sql: ALTER TABLE users MODIFY is_deleted BIT(1) NOT NULL DEFAULT 0
