@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -22,6 +23,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RegistrationException.class)
     public ResponseEntity<Object> handleRegistration(RegistrationException ex) {
         return buildResponse(HttpStatus.CONFLICT, List.of(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Object> handleConflict(ConflictException ex) {
+        return buildResponse(HttpStatus.CONFLICT, List.of(ex.getMessage()));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -40,6 +51,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(this::toMessage)
                 .toList();
         return buildResponse(HttpStatus.BAD_REQUEST, errors);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request
+    ) {
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                List.of("Request body is missing or has invalid format"));
     }
 
     private String toMessage(ObjectError error) {
