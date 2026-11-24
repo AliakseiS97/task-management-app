@@ -2,6 +2,7 @@ package com.aliakseis.taskmanagement.config;
 
 import com.aliakseis.taskmanagement.security.JwtAuthenticationFilter;
 import com.aliakseis.taskmanagement.security.JwtUtil;
+import com.aliakseis.taskmanagement.security.SecurityErrorHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,7 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final SecurityErrorHandler securityErrorHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -52,6 +54,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(securityErrorHandler)
+                        .accessDeniedHandler(securityErrorHandler))
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class)
