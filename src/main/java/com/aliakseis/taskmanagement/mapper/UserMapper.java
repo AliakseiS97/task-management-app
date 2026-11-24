@@ -4,6 +4,8 @@ import com.aliakseis.taskmanagement.dto.user.UserPatchRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserRegistrationRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserResponseDto;
 import com.aliakseis.taskmanagement.dto.user.UserUpdateRequestDto;
+import com.aliakseis.taskmanagement.dto.user.UserWithRolesResponseDto;
+import com.aliakseis.taskmanagement.model.Role;
 import com.aliakseis.taskmanagement.model.User;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -15,6 +17,12 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface UserMapper {
     UserResponseDto toDto(User user);
+
+    UserWithRolesResponseDto toDtoWithRoles(User user);
+
+    default Role.RoleName toRoleName(Role role) {
+        return role.getName();
+    }
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", ignore = true)

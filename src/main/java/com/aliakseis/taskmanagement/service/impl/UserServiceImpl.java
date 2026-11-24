@@ -3,7 +3,9 @@ package com.aliakseis.taskmanagement.service.impl;
 import com.aliakseis.taskmanagement.dto.user.UserPatchRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserRegistrationRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserResponseDto;
+import com.aliakseis.taskmanagement.dto.user.UserRoleUpdateRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserUpdateRequestDto;
+import com.aliakseis.taskmanagement.dto.user.UserWithRolesResponseDto;
 import com.aliakseis.taskmanagement.exception.ConflictException;
 import com.aliakseis.taskmanagement.exception.EntityNotFoundException;
 import com.aliakseis.taskmanagement.exception.RegistrationException;
@@ -13,6 +15,7 @@ import com.aliakseis.taskmanagement.model.User;
 import com.aliakseis.taskmanagement.repository.RoleRepository;
 import com.aliakseis.taskmanagement.repository.UserRepository;
 import com.aliakseis.taskmanagement.service.UserService;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,8 +41,7 @@ public class UserServiceImpl implements UserService {
             throw new RegistrationException(
                     "Username is already taken: " + requestDto.username());
         }
-        Role userRole = roleRepository.findByName(Role.RoleName.USER)
-                .orElseThrow(() -> new IllegalStateException("Role USER is not found"));
+        Role userRole = findRole(Role.RoleName.USER);
         User user = userMapper.toModel(requestDto);
         user.setPassword(passwordEncoder.encode(requestDto.password()));
         user.setRoles(Set.of(userRole));
@@ -72,6 +74,32 @@ public class UserServiceImpl implements UserService {
         checkUsernameAvailable(user, requestDto.username());
         userMapper.patchUser(requestDto, user);
         return saveProfile(user);
+    }
+
+    @Override
+    @Transactional
+    public UserWithRolesResponseDto updateRole(
+            Long id,
+            UserRoleUpdateRequestDto requestDto,
+            String currentUserEmail
+    ) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        if (user.getEmail().equals(currentUserEmail)) {
+            throw new ConflictException("You cannot change your own role");
+        }
+        Set<Role> roles = new HashSet<>();
+        roles.add(findRole(Role.RoleName.USER));
+        if (requestDto.role() == Role.RoleName.ADMIN) {
+            roles.add(findRole(Role.RoleName.ADMIN));
+        }
+        user.setRoles(roles);
+        return userMapper.toDtoWithRoles(userRepository.saveAndFlush(user));
+    }
+
+    private Role findRole(Role.RoleName name) {
+        return roleRepository.findByName(name)
+                .orElseThrow(() -> new IllegalStateException("Role " + name + " is not found"));
     }
 
     private User findByEmail(String email) {
