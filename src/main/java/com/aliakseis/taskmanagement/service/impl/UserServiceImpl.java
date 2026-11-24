@@ -2,6 +2,7 @@ package com.aliakseis.taskmanagement.service.impl;
 
 import com.aliakseis.taskmanagement.dto.user.UserRegistrationRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserResponseDto;
+import com.aliakseis.taskmanagement.exception.EntityNotFoundException;
 import com.aliakseis.taskmanagement.exception.RegistrationException;
 import com.aliakseis.taskmanagement.mapper.UserMapper;
 import com.aliakseis.taskmanagement.model.Role;
@@ -44,5 +45,14 @@ public class UserServiceImpl implements UserService {
         } catch (DataIntegrityViolationException e) {
             throw new RegistrationException("Email or username is already taken");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponseDto getProfile(String email) {
+        return userRepository.findByEmail(email)
+                .map(userMapper::toDto)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "User not found with email: " + email));
     }
 }
