@@ -1,7 +1,10 @@
 package com.aliakseis.taskmanagement.service.impl;
 
+import com.aliakseis.taskmanagement.dto.user.UserPatchRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserRegistrationRequestDto;
 import com.aliakseis.taskmanagement.dto.user.UserResponseDto;
+import com.aliakseis.taskmanagement.dto.user.UserUpdateRequestDto;
+import com.aliakseis.taskmanagement.exception.ConflictException;
 import com.aliakseis.taskmanagement.exception.EntityNotFoundException;
 import com.aliakseis.taskmanagement.exception.RegistrationException;
 import com.aliakseis.taskmanagement.mapper.UserMapper;
@@ -50,9 +53,46 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getProfile(String email) {
+        return userMapper.toDto(findByEmail(email));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto updateProfile(String email, UserUpdateRequestDto requestDto) {
+        User user = findByEmail(email);
+        checkUsernameAvailable(user, requestDto.username());
+        userMapper.updateUser(requestDto, user);
+        return saveProfile(user);
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto patchProfile(String email, UserPatchRequestDto requestDto) {
+        User user = findByEmail(email);
+        checkUsernameAvailable(user, requestDto.username());
+        userMapper.patchUser(requestDto, user);
+        return saveProfile(user);
+    }
+
+    private User findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .map(userMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "User not found with email: " + email));
+    }
+
+    private void checkUsernameAvailable(User user, String username) {
+        if (username != null
+                && !username.equals(user.getUsername())
+                && userRepository.existsByUsername(username)) {
+            throw new ConflictException("Username is already taken: " + username);
+        }
+    }
+
+    private UserResponseDto saveProfile(User user) {
+        try {
+            return userMapper.toDto(userRepository.saveAndFlush(user));
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Username is already taken");
+        }
     }
 }
