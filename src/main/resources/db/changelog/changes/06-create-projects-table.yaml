@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-projects-table
+      author: aliakseis
+      changes:
+        - createTable:
+            tableName: projects
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(1000)
+              - column:
+                  name: start_date
+                  type: DATE
+              - column:
+                  name: end_date
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: owner_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_projects_owner
+                    references: users(id)
+              - column:
+                  name: is_deleted
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: change-projects-is-deleted-type
+      author: aliakseis
+      dbms: mysql
+      changes:
+        - sql:
+            sql: ALTER TABLE projects MODIFY is_deleted BIT(1) NOT NULL DEFAULT 0

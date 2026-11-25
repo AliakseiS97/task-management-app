@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -35,6 +37,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, List.of(ex.getMessage()));
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleBadRequest(BadRequestException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, List.of(ex.getMessage()));
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<Object> handlePropertyReference(PropertyReferenceException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                List.of("Invalid sort property: " + ex.getPropertyName()));
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Object> handleBadCredentials(BadCredentialsException ex) {
         return buildResponse(HttpStatus.UNAUTHORIZED, List.of("Invalid email or password"));
@@ -62,6 +75,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ) {
         return buildResponse(HttpStatus.BAD_REQUEST,
                 List.of("Request body is missing or has invalid format"));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(
+            TypeMismatchException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request
+    ) {
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                List.of(ex.getPropertyName() + ": invalid value '" + ex.getValue() + "'"));
     }
 
     private String toMessage(ObjectError error) {
