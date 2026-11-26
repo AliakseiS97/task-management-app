@@ -15,6 +15,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -86,6 +87,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ) {
         return buildResponse(HttpStatus.BAD_REQUEST,
                 List.of(ex.getPropertyName() + ": invalid value '" + ex.getValue() + "'"));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(
+            MissingServletRequestParameterException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request
+    ) {
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                List.of(ex.getParameterName() + ": parameter is required"));
     }
 
     private String toMessage(ObjectError error) {
