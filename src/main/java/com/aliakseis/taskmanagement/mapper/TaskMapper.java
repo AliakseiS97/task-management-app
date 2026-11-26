@@ -19,12 +19,14 @@ public interface TaskMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "project", ignore = true)
     @Mapping(target = "assignee", ignore = true)
+    @Mapping(target = "labels", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     Task toModel(TaskCreateRequestDto requestDto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "project", ignore = true)
     @Mapping(target = "assignee", ignore = true)
+    @Mapping(target = "labels", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     void updateTask(TaskUpdateRequestDto requestDto, @MappingTarget Task task);
 }
