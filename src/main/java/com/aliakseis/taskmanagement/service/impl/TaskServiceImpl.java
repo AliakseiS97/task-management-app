@@ -5,14 +5,19 @@ import com.aliakseis.taskmanagement.dto.task.TaskResponseDto;
 import com.aliakseis.taskmanagement.dto.task.TaskUpdateRequestDto;
 import com.aliakseis.taskmanagement.exception.EntityNotFoundException;
 import com.aliakseis.taskmanagement.mapper.TaskMapper;
+import com.aliakseis.taskmanagement.model.Label;
 import com.aliakseis.taskmanagement.model.Project;
 import com.aliakseis.taskmanagement.model.Task;
 import com.aliakseis.taskmanagement.model.User;
+import com.aliakseis.taskmanagement.repository.LabelRepository;
 import com.aliakseis.taskmanagement.repository.ProjectRepository;
 import com.aliakseis.taskmanagement.repository.TaskRepository;
 import com.aliakseis.taskmanagement.repository.UserRepository;
 import com.aliakseis.taskmanagement.service.TaskService;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +29,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final LabelRepository labelRepository;
     private final TaskMapper taskMapper;
 
     @Override
@@ -34,6 +40,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskMapper.toModel(requestDto);
         task.setProject(project);
         task.setAssignee(findAssignee(requestDto.assigneeId()));
+        task.setLabels(findLabels(email, requestDto.labelIds()));
         return taskMapper.toDto(taskRepository.save(task));
     }
 
@@ -64,6 +71,7 @@ public class TaskServiceImpl implements TaskService {
         Task task = findOwnTask(email, id);
         taskMapper.updateTask(requestDto, task);
         task.setAssignee(findAssignee(requestDto.assigneeId()));
+        task.setLabels(findLabels(email, requestDto.labelIds()));
         return taskMapper.toDto(taskRepository.save(task));
     }
 
@@ -85,6 +93,20 @@ public class TaskServiceImpl implements TaskService {
         return userRepository.findById(assigneeId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "User not found with id: " + assigneeId));
+    }
+
+    private Set<Label> findLabels(String email, Set<Long> labelIds) {
+        if (labelIds == null || labelIds.isEmpty()) {
+            return new HashSet<>();
+        }
+        Set<Label> labels = new HashSet<>(
+                labelRepository.findAllByIdInAndOwnerEmail(labelIds, email));
+        if (labels.size() != labelIds.size()) {
+            Set<Long> missing = new TreeSet<>(labelIds);
+            labels.forEach(label -> missing.remove(label.getId()));
+            throw new EntityNotFoundException("Labels not found with ids: " + missing);
+        }
+        return labels;
     }
 
     private EntityNotFoundException projectNotFound(Long projectId) {

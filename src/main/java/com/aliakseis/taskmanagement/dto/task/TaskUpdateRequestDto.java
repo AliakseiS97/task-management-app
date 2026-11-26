@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 
 public record TaskUpdateRequestDto(
         @NotBlank @Size(max = 255) String name,
@@ -12,6 +13,7 @@ public record TaskUpdateRequestDto(
         @NotNull Task.Priority priority,
         @NotNull Task.Status status,
         LocalDate dueDate,
-        Long assigneeId
+        Long assigneeId,
+        Set<@NotNull Long> labelIds
 ) {
 }
