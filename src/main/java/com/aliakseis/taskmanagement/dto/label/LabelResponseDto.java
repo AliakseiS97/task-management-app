@@ -1,0 +1,8 @@
+package com.aliakseis.taskmanagement.dto.label;
+
+public record LabelResponseDto(
+        Long id,
+        String name,
+        String color
+) {
+}
