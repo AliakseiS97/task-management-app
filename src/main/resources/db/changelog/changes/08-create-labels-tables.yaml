@@ -1,0 +1,60 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-labels-table
+      author: aliakseis
+      changes:
+        - createTable:
+            tableName: labels
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: color
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: owner_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_labels_owner
+                    references: users(id)
+        - addUniqueConstraint:
+            tableName: labels
+            columnNames: owner_id, name
+            constraintName: uk_labels_owner_name
+  - changeSet:
+      id: create-tasks-labels-table
+      author: aliakseis
+      changes:
+        - createTable:
+            tableName: tasks_labels
+            columns:
+              - column:
+                  name: task_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_tasks_labels_task
+                    references: tasks(id)
+              - column:
+                  name: label_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_tasks_labels_label
+                    references: labels(id)
+                    deleteCascade: true

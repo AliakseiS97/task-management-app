@@ -2,6 +2,7 @@ package com.aliakseis.taskmanagement.dto.task;
 
 import com.aliakseis.taskmanagement.model.Task;
 import java.time.LocalDate;
+import java.util.Set;
 
 public record TaskResponseDto(
         Long id,
@@ -11,6 +12,7 @@ public record TaskResponseDto(
         Task.Status status,
         LocalDate dueDate,
         Long projectId,
-        Long assigneeId
+        Long assigneeId,
+        Set<Long> labelIds
 ) {
 }
