@@ -10,4 +10,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<Project> findAllByOwnerEmail(String email, Pageable pageable);
 
     Optional<Project> findByIdAndOwnerEmail(Long id, String email);
+
+    boolean existsByIdAndOwnerEmail(Long id, String email);
 }
